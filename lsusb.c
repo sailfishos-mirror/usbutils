@@ -1734,7 +1734,7 @@ static void dump_videocontrol_interface(libusb_device_handle *dev, const unsigne
 		}
 		n = buf[7];
 		if (buf[0] < 10+n) {
-			printf("      Warning: Descriptor too short\n");
+			printf("      Warning: Descriptor too short, must be at least %d\n", 10+n);
 			break;
 		}
 		term = get_dev_string(dev, buf[8+n]);
