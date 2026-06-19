@@ -163,6 +163,16 @@ static unsigned int convert_le_u16 (const unsigned char *buf)
 	return buf[0] | (buf[1] << 8);
 }
 
+static bool check_descriptor_length(int size, int min)
+{
+	if (size < min) {
+		printf("      Warning: Descriptor too short, is %d, must be at least %d\n",
+		       size, min);
+		return false;
+	}
+	return true;
+}
+
 /* ---------------------------------------------------------------------- */
 
 /* workaround libusb API goofs:  "byte" should never be sign extended;
@@ -1598,6 +1608,7 @@ static void dump_videocontrol_interface(libusb_device_handle *dev, const unsigne
 		"None", "NTSC - 525/60", "PAL - 625/50", "SECAM - 625/50", "NTSC - 625/50", "PAL - 525/60",
 	};
 	unsigned int i, ctrls, stds, n, p, termt, freq;
+	unsigned int version = 0;
 	char *term = NULL, termts[128];
 
 	if (buf[1] != USB_DT_CS_INTERFACE)
@@ -1624,6 +1635,7 @@ static void dump_videocontrol_interface(libusb_device_handle *dev, const unsigne
 			break;
 		}
 		freq = convert_le_u32(buf + 7);
+		version = convert_le_u16(buf + 3);
 		printf("        bcdUVC              %2x.%02x\n"
 		       "        wTotalLength       0x%04x\n"
 		       "        dwClockFrequency    %5u.%06uMHz\n"
@@ -1733,10 +1745,12 @@ static void dump_videocontrol_interface(libusb_device_handle *dev, const unsigne
 			break;
 		}
 		n = buf[7];
-		if (buf[0] < 10+n) {
-			printf("      Warning: Descriptor too short, must be at least %d\n", 10+n);
+		if (version >= 0x0110)
+			p = 10;
+		else
+			p = 9;
+		if (!check_descriptor_length(buf[0], p + n))
 			break;
-		}
 		term = get_dev_string(dev, buf[8+n]);
 		printf("        bUnitID             %5u\n"
 		       "        bSourceID           %5u\n"
