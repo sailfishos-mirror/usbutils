@@ -58,7 +58,7 @@ add_project_arguments(
     '-fdiagnostics-color=auto',
     # warnings disabled on purpose
     '-Wno-unused-parameter',
-    '-Wno-unused-function',
+    #'-Wno-unused-function',
     '-Wno-deprecated-declarations',
   ]),
   language: 'c',
